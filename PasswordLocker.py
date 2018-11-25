@@ -6,9 +6,15 @@
 
 import sys
 import pyperclip  # a cross-platform clipboard module for python
+import shelve     # for saving PASSWORDS variable
+import os
 
-PASSWORDS = {'email': '123',
-             'blog': '456'}
+shelfFile = shelve.open(os.path.join(os.getcwd(), 'Passwords.dat'))
+
+if 'PASSWORDS' not in list(shelfFile.keys()):
+    shelfFile['PASSWORDS'] = {}
+
+PASSWORDS = shelfFile['PASSWORDS']
 
 if len(sys.argv) < 2 or len(sys.argv) > 3:
     print('Bad number of arguments.')
@@ -24,12 +30,20 @@ elif len(sys.argv) == 2:
     else:
         print('There is no account named ' + account)
 else:
-    newaccount = sys.argv[1]
-    newpassword = sys.argv[2]
-    if newaccount in PASSWORDS:
-        print('Password for ' + newaccount + ' updated to '
-              + newpassword + '.')
+    if sys.argv[2] != 'del':
+        newaccount = sys.argv[1]
+        newpassword = sys.argv[2]
+        if newaccount in PASSWORDS:
+            print('Password for ' + newaccount + ' updated to '
+                  + newpassword + '.')
+        else:
+            print('Password for ' + newaccount + ' added to PASSWORDS.')
+        PASSWORDS[newaccount] = newpassword
+        pyperclip.copy(newpassword)
     else:
-        print('Password for ' + newaccount + ' added to PASSWORDS.')
-    PASSWORDS[newaccount] = newpassword
-    pyperclip.copy(newpassword)
+        if PASSWORDS.pop(sys.argv[1], None):
+            print('Password for ' + sys.argv[1] + ' deleted.')
+
+shelfFile['PASSWORDS'] = PASSWORDS
+
+shelfFile.close()
