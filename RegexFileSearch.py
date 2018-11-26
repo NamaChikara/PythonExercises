@@ -78,11 +78,13 @@ userRegex = re.compile(response)
 matches = {}
 
 for file in toSearch:
-    fileContents = open(os.path.join(directory, file)).read()
+    fileObj = open(os.path.join(directory, file), errors='ignore')
+    fileContents = fileObj.read()
     fileMatches = userRegex.findall(fileContents)
     for mm in fileMatches:
         matches.setdefault(mm, 0)
         matches[mm] += 1
+    fileObj.close()
 
 # print the results
 
